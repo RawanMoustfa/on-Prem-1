@@ -1,4 +1,4 @@
 phases:
-  pre_build:
+  build:
     commands:
      - ping 172.16.13.25
