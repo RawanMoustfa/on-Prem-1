@@ -6,6 +6,6 @@ phases:
   build:
     commands:
       - aws --version
-      - ping 172.16.7.31
+      - ping 172.16.252.30
      
 
