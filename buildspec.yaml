@@ -1,45 +1,11 @@
 version: 0.2
-batch:
-  fast-fail: false
-  build-list:
-    - identifier: build1
-      buildspec: buildspec.yml
-      env:
-        variables:
-          Repository: Service-search-repo
-          Service_Name: Service-search
 
 
 phases:
-  pre_build:
-    commands:
-      - echo Logging in to Amazon ECR...
-      - aws --version
-      - ping 172.16.7.31
-      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-      - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-      - REPOSITORY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$Repository"
-      - IMAGE_URI="{$REPOSITORY_URI}:${TAG}"
-      
       
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build --file ./$Service_Name/Dockerfile --tag "$IMAGE_URI" .
-      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-      - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-      - kubectl version
-      - cp --file ./.kube $HOME/ 
-      - ls $HOME/.kube
-      - kubectl get nodes
-      
-
-      
-  post_build:
-    commands:
-      - echo Build completed on `date`
-      - echo Pushing the Docker images...
-      - docker push "$IMAGE_URI"
-      - kubectl set image deployment/$Service_Name $Service_Name=$IMAGE_URI -n staging 
+      - aws --version
+      - ping 172.16.7.31
+     
 
