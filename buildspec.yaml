@@ -20,9 +20,15 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...
       - docker build -t $IMAGE_URI -f $SERVICE_NAME/Dockerfile . 
-      - echo $sacacert
+
+      
+  post_build:
+    commands:  
+      - bash -c "if [ /"$CODEBUILD_BUILD_SUCCEEDING/" == /"0/" ]; then exit 1; fi"
+      - echo Build stage successfully completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $IMAGE_URI
       - echo $sacacert > ca.crt
-      - cat ca.crt
       - kubectl config set-cluster lts-stg --server=$server --certificate-authority=ca.crt
       - kubectl config set-credentials codepipeline --token=$satoken
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
@@ -32,12 +38,5 @@ phases:
       - kubectl config current-context 
       - kubectl config get-contexts 
       - kubectl get pods -n staging --insecure-skip-tls-verify
-      
-  post_build:
-    commands:  
-      - bash -c "if [ /"$CODEBUILD_BUILD_SUCCEEDING/" == /"0/" ]; then exit 1; fi"
-      - echo Build stage successfully completed on `date`
-      - echo Pushing the Docker image...
-      - docker push $IMAGE_URI
       - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
       - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE-cf set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE-cf set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
