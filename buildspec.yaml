@@ -13,7 +13,9 @@ phases:
       - yum install -y curl
       - curl -sS -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
       - chmod +x ./kubectl
-      - kubectl config set-cluster lts-stg --server=$server --certificate-authority=$sacacert
+      - echo $sacacert
+      - echo $sacacert > ca.crt
+      - kubectl config set-cluster lts-stg --server=$server --certificate-authority=ca.crt
       - kubectl config set-credentials codepipeline --token=$satoken
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
       - kubectl config use-context codepipeline
