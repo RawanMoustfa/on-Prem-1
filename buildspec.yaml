@@ -18,5 +18,8 @@ phases:
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
       - kubectl config use-context codepipeline
       - kubectl --version
+      - kubectl config view
+      - kubectl config current-context
+      - kubectl config get-contexts
       - kubectl get pods -n staging
 
