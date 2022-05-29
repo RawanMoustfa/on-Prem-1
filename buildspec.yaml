@@ -17,5 +17,6 @@ phases:
       - kubectl config set-credentials codepipeline --token=$satoken
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
       - kubectl config use-context codepipeline
-      - /codebuild/output/src940293961/src
       - kubectl get pods -n staging
+      - ls /codebuild/output/src940293961/src
+      - codebuild-breakpoint
