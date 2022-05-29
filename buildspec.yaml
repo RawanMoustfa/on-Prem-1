@@ -20,9 +20,9 @@ phases:
       - kubectl config set-credentials codepipeline --token=$satoken
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
       - kubectl config use-context codepipeline
-      - kubectl version --insecure-skip-tls-verify
-      - kubectl config view --insecure-skip-tls-verify
-      - kubectl config current-context --insecure-skip-tls-verify
-      - kubectl config get-contexts --insecure-skip-tls-verify
-      - kubectl get pods -n staging --insecure-skip-tls-verify
+      - kubectl version 
+      - kubectl config view 
+      - kubectl config current-context 
+      - kubectl config get-contexts 
+      - kubectl get pods -n staging 
 
