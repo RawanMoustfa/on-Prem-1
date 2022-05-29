@@ -16,8 +16,8 @@ phases:
       - kubectl version
       - kubectl version
       - ls $HOME/.kube
-      - kubectl config set-cluster lts-stg --embed-certs=true --server=$server --certificate-authority=cacrt
-      - kubectl config set-credentials codepipeline --token=$token
+      - kubectl config set-cluster lts-stg --embed-certs=true --server=$server --certificate-authority=sacacrt
+      - kubectl config set-credentials codepipeline --token=$satoken
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
       - kubectl config use-context codepipeline
       - kubectl get nodes
