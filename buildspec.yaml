@@ -10,7 +10,10 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - yum install -y kubectl 
+      - yum install -y curl
+      - curl -LO “https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl”
+      - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      - kubectl version
       - kubectl version
       - ls $HOME/.kube
       - kubectl config set-cluster lts-stg --embed-certs=true --server=$server --certificate-authority=cacrt
