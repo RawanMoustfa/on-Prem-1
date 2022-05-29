@@ -1,18 +1,25 @@
 version: 0.2
 
 phases:
+  install:
+    commands:
+      - yum install -y curl
+      - curl -sS -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+      - REPOSITORY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME"
+      - IMAGE_URI="{$REPOSITORY_URI}:${TAG}"
+    
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - yum install -y curl
-      - curl -sS -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.20.4/2021-04-12/bin/linux/amd64/kubectl
-      - chmod +x ./kubectl
+      - docker build -t $IMAGE_URI -f $SERVICE_NAME/Dockerfile . 
       - echo $sacacert
       - echo $sacacert > ca.crt
       - cat ca.crt
@@ -25,4 +32,12 @@ phases:
       - kubectl config current-context 
       - kubectl config get-contexts 
       - kubectl get pods -n staging --insecure-skip-tls-verify
-
+      
+  post_build:
+    commands:  
+      - bash -c "if [ /"$CODEBUILD_BUILD_SUCCEEDING/" == /"0/" ]; then exit 1; fi"
+      - echo Build stage successfully completed on `date`
+      - echo Pushing the Docker image...
+      - docker push $IMAGE_URI
+      - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
+      - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE-cf set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE-cf set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
