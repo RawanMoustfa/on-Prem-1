@@ -17,4 +17,4 @@ phases:
       - kubectl config set-credentials codepipeline --token=$satoken
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
       - kubectl config use-context codepipeline
-      - kubectl get nodes
+      - kubectl get ods -n staging
