@@ -1,4 +1,4 @@
-version: 0.2
+[]\version: 0.2
 
 phases:
   install:
@@ -34,9 +34,6 @@ phases:
       - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
       - kubectl config use-context codepipeline
       - kubectl version --insecure-skip-tls-verify
-      - kubectl config view 
-      - kubectl config current-context 
-      - kubectl config get-contexts 
       - kubectl get pods -n staging --insecure-skip-tls-verify
       - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
       - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE-cf set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE-cf set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
