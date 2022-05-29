@@ -1,11 +1,22 @@
 version: 0.2
 
-
 phases:
-      
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws --version
+      - ping 172.16.7.31
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
   build:
     commands:
-      - aws --version
-      - ping 172.16.252.30
-     
-
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - curl -LO “https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl”
+      - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+      - kubectl version
+      - ls $HOME/.kube
+      - kubectl config set-cluster lts-stg --embed-certs=true --server=$server --certificate-authority=cacrt
+      - kubectl config set-credentials codepipeline --token=$token
+      - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
+      - kubectl config use-context codepipeline
+      - kubectl get nodes
