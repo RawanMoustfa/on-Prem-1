@@ -28,12 +28,13 @@ phases:
       - echo Build stage successfully completed on `date`
       - echo Pushing the Docker image...
       - docker push $IMAGE_URI
-      - echo $sacacert > ca.crt
-      - kubectl config set-cluster lts-stg --server=$server --certificate-authority=ca.crt
-      - kubectl config set-credentials codepipeline --token=$satoken
-      - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
+      - echo $cacert > ca.crt
+      - echo $client-key > admin.key
+      - echo $client-cert > admin.crt
+      - kubectl config set-cluster lts-stg --server=$api-server --certificate-authority=ca.crt
+      - kubectl config set-credentials kube-admin-lts-stg --client-certificate=admin.crt  --client-key=admin.key
+      - kubectl config set-context codepipeline --cluster=lts-stg --user=kube-admin-lts-stg 
       - kubectl config use-context codepipeline
       - kubectl version --insecure-skip-tls-verify
       - kubectl get pods -n staging --insecure-skip-tls-verify
-      - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
-      - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE-cf set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE-cf set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
+      - kubectl get pods -n staging-cf --insecure-skip-tls-verify
