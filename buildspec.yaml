@@ -10,30 +10,18 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-      - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-      - REPOSITORY_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME"
-      - IMAGE_URI="{$REPOSITORY_URI}:${TAG}"
-    
+
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building the Docker image...
-      - docker build -t $IMAGE_URI -f $SERVICE_NAME/Dockerfile . 
-
-      
-  post_build:
-    commands:  
-      - bash -c "if [ /"$CODEBUILD_BUILD_SUCCEEDING/" == /"0/" ]; then exit 1; fi"
       - echo Build stage successfully completed on `date`
       - echo Pushing the Docker image...
       - docker push $IMAGE_URI
-      - echo $sacacert > ca.crt
-      - kubectl config set-cluster lts-stg --server=$server --certificate-authority=ca.crt
-      - kubectl config set-credentials codepipeline --token=$satoken
-      - kubectl config set-context codepipeline --cluster=lts-stg --user=codepipeline --namespace=staging
+     - echo $cacert > ca.crt
+      - echo $client-key > admin.key
+      - echo $client-cert > admin.crt
+      - kubectl config set-cluster lts-stg --server=$api-server --certificate-authority=ca.crt
+      - kubectl config set-credentials kube-admin-lts-stg --client-certificate=admin.crt  --client-key=admin.key
+      - kubectl config set-context codepipeline --cluster=lts-stg --user=kube-admin-lts-stg 
       - kubectl config use-context codepipeline
       - kubectl version --insecure-skip-tls-verify
       - kubectl get pods -n staging --insecure-skip-tls-verify
-      - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
-      - if [ $SERVICE_NAME = "logstash" ] ; then kubectl -n $NAMESPACE-cf set image statefulset/$SERVICE_NAME-$SERVICE_NAME $SERVICE_NAME=$IMAGE_URI ; else kubectl -n $NAMESPACE-cf set image deployment/$SERVICE_NAME  $SERVICE_NAME=$IMAGE_URI ; fi
